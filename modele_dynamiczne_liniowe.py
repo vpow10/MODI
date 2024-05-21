@@ -70,6 +70,7 @@ def linear_dynamic_model(N: int, recursive: bool, visualize: bool = True):
             plt.xlabel("x")
             plt.ylabel("y")
             plt.title("Model dynamiczny liniowy z rekurencją na tle danych uczących")
+            plt.legend(["Dane uczące", "Model dynamiczny"])
             # wizualizacja modelu dynamicznego na tle danych testujących
             plt.figure(2)
             plt.scatter(x, test_data[:, 1], c='r', linewidths=0.5, edgecolors='black')
@@ -77,6 +78,7 @@ def linear_dynamic_model(N: int, recursive: bool, visualize: bool = True):
             plt.xlabel("x")
             plt.ylabel("y")
             plt.title("Model dynamiczny liniowy z rekurencją na tle danych testujących")
+            plt.legend(["Dane testujące", "Model dynamiczny"])
         else:
             # wizualizacja modelu dynamicznego na tle danych uczących
             x = np.linspace(0, 1, len(Y))
@@ -86,6 +88,7 @@ def linear_dynamic_model(N: int, recursive: bool, visualize: bool = True):
             plt.xlabel("x")
             plt.ylabel("y")
             plt.title("Model dynamiczny liniowy na tle danych uczących")
+            plt.legend(["Dane uczące", "Model dynamiczny"])
             # wizualizacja modelu dynamicznego na tle danych testujących
             plt.figure(2)
             plt.scatter(x, test_data[N:, 1], c='r', linewidths=0.5, edgecolors='black')
@@ -93,6 +96,7 @@ def linear_dynamic_model(N: int, recursive: bool, visualize: bool = True):
             plt.xlabel("x")
             plt.ylabel("y")
             plt.title("Model dynamiczny liniowy na tle danych testujących")
+            plt.legend(["Dane testujące", "Model dynamiczny"])
     # obliczenie błędu dla danych uczących
     error_train = np.sum((ymod_train - Y) ** 2) if not recursive else np.sum((ymod_train - train_data[:, 1]) ** 2)
     # obliczenie błędu dla danych testujących
@@ -105,4 +109,9 @@ def linear_dynamic_model(N: int, recursive: bool, visualize: bool = True):
 
 
 if __name__ == "__main__":
+    linear_dynamic_model(1, False)
+    linear_dynamic_model(1, True)
+    linear_dynamic_model(2, False)
+    linear_dynamic_model(2, True)
+    linear_dynamic_model(3, False)
     linear_dynamic_model(3, True)

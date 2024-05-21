@@ -137,7 +137,7 @@ def nonlinear_dynamic_model(N: int, K: int, recursive: bool, visualize: bool = T
         print("Błąd dla danych uczących: ", round(error_train, 3))
         print("Błąd dla danych testowych: ", round(error_test, 3))
         plt.show()
-    return w, round(error_train, 3), round(error_test, 3)
+    return w, round(error_train, 2), round(error_test, 2)
 
 def test_multiple_params(max_dynamic_degree: int, max_polynomial_degree: int, recursive: bool):
     all_errors_train = {i: [] for i in range(1, max_dynamic_degree + 1)}
@@ -151,8 +151,8 @@ def test_multiple_params(max_dynamic_degree: int, max_polynomial_degree: int, re
             errors_test.append(error_test)
         all_errors_train[i] = errors_train
         all_errors_test[i] = errors_test
-    for i, errors_train in all_errors_train.items():
-        print(f"Stopień dynamiki: {i}, najmniejszy błąd dla danych uczących: {min(errors_train)} dla wielomianu stopnia {errors_train.index(min(errors_train)) + 1}")
+    for i, errors_test in all_errors_test.items():
+        print(f"Stopień dynamiki: {i}, najmniejszy błąd dla danych testowych: {min(errors_test)} dla wielomianu stopnia {errors_test.index(min(errors_test)) + 1}")
     return all_errors_train, all_errors_test
 
 def make_static_characteristic(N: int, K: int, recursive: bool):
@@ -176,7 +176,7 @@ def make_static_characteristic(N: int, K: int, recursive: bool):
             temp += w[i] * row[i]
         y.append(temp)
     plt.figure(1)
-    plt.plot(u[40:], y[40:], c='b', linewidth=1.5)
+    plt.plot(u[45:], y[45:], c='b', linewidth=1.5)
     plt.xlabel("u")
     plt.ylabel("y")
     plt.title("Charakterystyka statyczna na podstawie najlepszego modelu dynamicznego")
@@ -184,6 +184,7 @@ def make_static_characteristic(N: int, K: int, recursive: bool):
 
 
 if __name__=="__main__":
-    test_multiple_params(10, 7, True)
+    # print(test_multiple_params(8, 6, False))
+    # print(test_multiple_params(8, 6, True))
     # Charakterystyka statyczna na podstawie najlepszego modelu dynamicznego
-    make_static_characteristic(9, 7, True)
+    make_static_characteristic(8, 4, True)

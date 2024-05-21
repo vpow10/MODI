@@ -74,9 +74,11 @@ def test_multiple_degrees(max_degree: int):
     plt.legend()
     plt.show()
     print("Najmniejszy błąd dla danych testowych:", f"{np.min(errors_test)},", "dla stopnia wielomianu:", np.argmin(errors_test) + 1)
+    print(errors_train)
+    print(errors_test)
     return errors_train, errors_test
 
 if __name__=="__main__":
-    test_multiple_degrees(20)
+    test_multiple_degrees(10)
     # wizualizacja najlepszego wyniku
     nonlinear_static_model(4)
