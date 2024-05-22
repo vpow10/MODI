@@ -14,7 +14,7 @@ def create_data(N: int):
     # Stworzenie wektora danych wejściowych i wyjściowych
     input_data = []
     output_data = []
-    for i in range(N-1, len(train_data[:, 0])-1):
+    for i in range(N-1, len(train_data[:, 0])):
         row = []
         for j in range(1, N):
             row.append(train_data[i - j, 0])
@@ -31,11 +31,31 @@ def neural_network(N: int, k: int, recursive: bool, visualize: bool = True):
     train_data, test_data = load_dynamic_data()
     train_data = np.array(train_data)
     test_data = np.array(test_data)
-    input_data = create_input_data(N)
+    input_data, output_data = create_data(N)
     # Stworzenie modelu
     model = Sequential()
+    model.add(Dense(k, input_dim=2 * (N - 1), activation='relu'))
+    model.add(Dense(1, activation='relu'))
+    # Uczenie modelu
+    model.compile(optimizer='adam', loss='mean_squared_error')
+    model.fit(input_data, output_data, epochs=100)
+    # Stworzenie wektorów z danych testujących
+    input_data_test = []
+    output_data_test = []
+    for i in range(N-1, len(test_data[:, 0])):
+        row = []
+        for j in range(1, N):
+            row.append(test_data[i - j, 0])
+            row.append(test_data[i - j, 1])
+        input_data_test.append(row)
+        output_data_test.append(test_data[i, 1])
+    predictions = [model.predict(input_data_test[i]) for i in range(len(input_data_test))]
+    plt.plot(range(len(output_data_test)), output_data_test, label='True Data')
+    plt.plot(range(len(output_data_test)), predictions, label='Predicted Data')
+    # accuracy = model.evaluate(input_data_test, output_data_test)
+    # return accuracy
 
-
+neural_network(8, 1, False, True)
 # # Example provided data (replace with actual provided data)
 # train_data, test_data = load_dynamic_data()
 # train_data = np.array(train_data)

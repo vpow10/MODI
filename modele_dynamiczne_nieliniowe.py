@@ -188,4 +188,5 @@ if __name__=="__main__":
     # print(test_multiple_params(8, 6, False))
     # print(test_multiple_params(8, 6, True))
     # Charakterystyka statyczna na podstawie najlepszego modelu dynamicznego
-    make_static_characteristic(8, 4, True)
+    # make_static_characteristic(8, 4, True)
+    nonlinear_dynamic_model(3, 1, True)
