@@ -176,6 +176,7 @@ def make_static_characteristic(N: int, K: int, recursive: bool):
             temp += w[i] * row[i]
         y.append(temp)
     plt.figure(1)
+    plt.plot(u[:45], y[:45], c='r', linewidth=1.5)
     plt.plot(u[45:], y[45:], c='b', linewidth=1.5)
     plt.xlabel("u")
     plt.ylabel("y")
