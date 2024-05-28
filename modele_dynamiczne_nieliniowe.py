@@ -95,36 +95,36 @@ def nonlinear_dynamic_model(N: int, K: int, recursive: bool, visualize: bool = T
     if visualize:
         if recursive:
             # Wizualizacja modelu dynamicznego na tle danych uczących
-            x = np.linspace(0, 1, len(train_data[:, 0]))
+            k = np.linspace(0, 2000, len(train_data[:, 0]))
             plt.figure(1)
-            plt.scatter(x, train_data[:, 1], c='r', linewidths=0.5, edgecolors='black')
-            plt.plot(x, ymod_train, c='b', linewidth=1.5)
-            plt.xlabel("x")
+            plt.scatter(k, train_data[:, 1], c='r', linewidths=0.5, edgecolors='black')
+            plt.plot(k, ymod_train, c='b', linewidth=1.5)
+            plt.xlabel("k")
             plt.ylabel("y")
             plt.title("Model dynamiczny nieliniowy z rekurencją na tle danych uczących")
 
             # Wizualizacja modelu dynamicznego na tle danych testujących
             plt.figure(2)
-            plt.scatter(x, test_data[:, 1], c='r', linewidths=0.5, edgecolors='black')
-            plt.plot(x, ymod_test, c='b', linewidth=1.5)
-            plt.xlabel("x")
+            plt.scatter(k, test_data[:, 1], c='r', linewidths=0.5, edgecolors='black')
+            plt.plot(k, ymod_test, c='b', linewidth=1.5)
+            plt.xlabel("k")
             plt.ylabel("y")
             plt.title("Model dynamiczny nieliniowy z rekurencją na tle danych testujących")
         else:
             # Wizualizacja modelu dynamicznego na tle danych uczących
-            x = np.linspace(0, 1, len(Y))
+            k = np.linspace(0, 2000, len(Y))
             plt.figure(1)
-            plt.scatter(x, Y, c='r', linewidths=0.5, edgecolors='black')
-            plt.plot(x, ymod_train, c='b', linewidth=1.5)
-            plt.xlabel("x")
+            plt.scatter(k, Y, c='r', linewidths=0.5, edgecolors='black')
+            plt.plot(k, ymod_train, c='b', linewidth=1.5)
+            plt.xlabel("k")
             plt.ylabel("y")
             plt.title("Model dynamiczny nieliniowy bez rekurencji na tle danych uczących")
 
             # Wizualizacja modelu dynamicznego na tle danych testujących
             plt.figure(2)
-            plt.scatter(x, test_data[N:, 1], c='r', linewidths=0.5, edgecolors='black')
-            plt.plot(x, ymod_test, c='b', linewidth=1.5)
-            plt.xlabel("x")
+            plt.scatter(k, test_data[N:, 1], c='r', linewidths=0.5, edgecolors='black')
+            plt.plot(k, ymod_test, c='b', linewidth=1.5)
+            plt.xlabel("k")
             plt.ylabel("y")
             plt.title("Model dynamiczny nieliniowy bez rekurencji na tle danych testujących")
 
@@ -185,8 +185,8 @@ def make_static_characteristic(N: int, K: int, recursive: bool):
 
 
 if __name__=="__main__":
-    # print(test_multiple_params(8, 6, False))
-    # print(test_multiple_params(8, 6, True))
-    # Charakterystyka statyczna na podstawie najlepszego modelu dynamicznego
-    # make_static_characteristic(8, 4, True)
-    nonlinear_dynamic_model(3, 1, True)
+    test_multiple_params(8, 6, False)
+    test_multiple_params(8, 6, True)
+    # Charakterystyka statyczna na podstawie najlepszego modelu dynamicznego i wizualizacja go
+    nonlinear_dynamic_model(8, 4, True)
+    make_static_characteristic(8, 4, True)

@@ -1,121 +1,90 @@
 import numpy as np
-import tensorflow as tf
 from keras.src.models import Sequential
-from keras.src.layers import LSTM, Dense, Dropout
-from sklearn.preprocessing import MinMaxScaler
+from keras.src.layers import LSTM, Dense
 import matplotlib.pyplot as plt
 from dane_dynamiczne import load_dynamic_data
 
 
-def create_data(N: int):
+def create_data(N: int, data_type: bool, recursive: bool):
     train_data, test_data = load_dynamic_data()
     train_data = np.array(train_data)
     test_data = np.array(test_data)
-    # Stworzenie wektora danych wejściowych i wyjściowych
+    data = train_data if data_type else test_data
+    # Stworzenie wektorów danych wejściowych i wyjściowych
     input_data = []
     output_data = []
-    for i in range(N-1, len(train_data[:, 0])):
+    for i in range(N-1, len(data[:, 0])):
         row = []
         for j in range(1, N):
-            row.append(train_data[i - j, 0])
-            row.append(train_data[i - j, 1])
+            row.append(data[i - j, 0])
+            row.append(data[i - j, 1])
         input_data.append(row)
-        output_data.append(train_data[i, 1])
-    return np.array(input_data), np.array(output_data)
-
-print(create_data(3))
+        output_data.append(data[i, 1])
+    input_data = np.array(input_data)
+    if recursive:
+        input_data = input_data.reshape((input_data.shape[0], N-1, 2))
+    return input_data, np.array(output_data)
 
 def neural_network(N: int, k: int, recursive: bool, visualize: bool = True):
     # N - rząd dynamiki, k - ilość neuronów w warstwie ukrytej,
     # recursive - czy model ma być rekurencyjny, visualize - czy model ma być wizualizowany
+
+    # Uzyskanie danych
     train_data, test_data = load_dynamic_data()
     train_data = np.array(train_data)
     test_data = np.array(test_data)
-    input_data, output_data = create_data(N)
+    input_data, output_data = create_data(N, True, recursive)
+
     # Stworzenie modelu
     model = Sequential()
-    model.add(Dense(k, input_dim=2 * (N - 1), activation='relu'))
-    model.add(Dense(1, activation='relu'))
+    if recursive:
+        model.add(LSTM(k, input_shape=(N-1, 2), activation='leaky_relu'))
+    else:
+        model.add(Dense(k, input_dim=2 * (N - 1), activation='leaky_relu'))
+    model.add(Dense(1, activation='leaky_relu'))
+
     # Uczenie modelu
     model.compile(optimizer='adam', loss='mean_squared_error')
     model.fit(input_data, output_data, epochs=100)
-    # Stworzenie wektorów z danych testujących
-    input_data_test = []
-    output_data_test = []
-    for i in range(N-1, len(test_data[:, 0])):
-        row = []
-        for j in range(1, N):
-            row.append(test_data[i - j, 0])
-            row.append(test_data[i - j, 1])
-        input_data_test.append(row)
-        output_data_test.append(test_data[i, 1])
-    predictions = [model.predict(input_data_test[i]) for i in range(len(input_data_test))]
-    plt.plot(range(len(output_data_test)), output_data_test, label='True Data')
-    plt.plot(range(len(output_data_test)), predictions, label='Predicted Data')
-    # accuracy = model.evaluate(input_data_test, output_data_test)
-    # return accuracy
 
-neural_network(8, 1, False, True)
-# # Example provided data (replace with actual provided data)
-# train_data, test_data = load_dynamic_data()
-# train_data = np.array(train_data)
-# test_data = np.array(test_data)
+    # Stworzenie wektorów z danych testujących i predykcje modelu
+    predictions_train = model.predict(input_data)
+    input_data_test, output_data_test = create_data(N, False, recursive)
+    predictions_test = model.predict(input_data_test)
 
-# # Normalize the y-values (second column)
-# scaler = MinMaxScaler(feature_range=(0, 1))
-# train_data[:, 1] = scaler.fit_transform(train_data[:, 1].reshape(-1, 1)).reshape(-1)
-# test_data[:, 1] = scaler.transform(test_data[:, 1].reshape(-1, 1)).reshape(-1)
+    # Sprowadzenie predykcji do jednego wymiaru
+    predictions_train = predictions_train.flatten()
+    predictions_test = predictions_test.flatten()
 
-# # Prepare the data for LSTM
-# def create_dataset(data, time_step=1):
-#     X, y = [], []
-#     for i in range(len(data)-time_step-1):
-#         a = data[i:(i+time_step), 1]
-#         X.append(a)
-#         y.append(data[i + time_step, 1])
-#     return np.array(X), np.array(y)
+    # Obliczenie błędu średniokwadratowego
+    tse_train = round(np.sum((output_data - predictions_train.flatten())**2), 3)
+    tse_test = round(np.sum((output_data_test - predictions_test.flatten())**2), 3)
 
-# time_step = 9  # Adjust based on your requirements
-# X_train, y_train = create_dataset(train_data, time_step)
-# X_test, y_test = create_dataset(test_data, time_step)
+    if visualize:
+        recursive_str = 'z rekurencją' if recursive else 'bez rekurencji'
+        plt.figure(1)
+        plt.plot(range(len(output_data)), output_data, label='Zbiór uczący')
+        plt.plot(range(len(output_data)), predictions_train, label='Wyjście modelu')
+        plt.title(f'Model {recursive_str}, dane uczące')
+        plt.xlabel('k')
+        plt.ylabel('y')
+        plt.legend()
+        plt.figure(2)
+        plt.plot(range(len(output_data_test)), output_data_test, label='Zbiór testujący')
+        plt.plot(range(len(output_data_test)), predictions_test, label='Wyjście modelu')
+        plt.title(f'Model {recursive_str}, dane testujące')
+        plt.xlabel('k')
+        plt.ylabel('y')
+        plt.legend()
+        print(f'Błąd średniokwadratowy dla zbioru uczącego: {tse_train}')
+        print(f'Błąd średniokwadratowy dla zbioru testującego: {tse_test}')
+        plt.show()
+    return tse_train, tse_test
 
-# X_train = X_train.reshape(X_train.shape[0], X_train.shape[1], 1)
-# X_test = X_test.reshape(X_test.shape[0], X_test.shape[1], 1)
-
-# # Build the model
-# model = Sequential()
-# model.add(LSTM(100, input_shape=(time_step, 1), activation='tanh'))
-# model.add(Dense(1, activation='tanh'))
-
-# model.compile(optimizer='adam', loss='mean_squared_error')
-
-# # Train the Model
-# model.fit(X_train, y_train, epochs=100, batch_size=32, validation_split=0.2, verbose=1)
-
-# # Recursive prediction function
-# def recursive_predict(model, data, time_step, num_predictions):
-#     predictions = []
-#     current_input = data[-1]  # Start with the last input sequence
-
-#     for _ in range(num_predictions):
-#         current_input = current_input.reshape(1, time_step, 1)
-#         next_pred = model.predict(current_input)
-#         predictions.append(next_pred[0, 0])
-
-#         # Update the current input with the new prediction
-#         current_input = np.append(current_input[:, 1:, :], next_pred.reshape(1, 1, 1), axis=1)
-
-#     return np.array(predictions)
-
-# # Make recursive predictions
-# num_predictions = len(y_test)
-# predictions = recursive_predict(model, X_test, time_step, num_predictions)
-
-# # Inverse transform the predictions
-# predictions = scaler.inverse_transform(predictions.reshape(-1, 1))
-
-# # Plotting the results
-# plt.plot(range(len(y_test)), scaler.inverse_transform(y_test.reshape(-1, 1)), label='True Data')
-# plt.plot(range(len(predictions)), predictions, label='Predicted Data')
-# plt.legend()
-# plt.show()
+if __name__ == "__main__":
+    # Zbyt mała (1) ilość neuronów w warstwie ukrytej
+    neural_network(8, 1, recursive=False)
+    neural_network(8, 1, recursive=True)
+    # Optymalna ilość neuronów w warstwie ukrytej
+    neural_network(8, 20, recursive=False)
+    neural_network(8, 20, recursive=True)
